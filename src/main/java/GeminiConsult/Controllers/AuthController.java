@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -29,16 +28,17 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     @Autowired
     private final TokenService tokenService;
+    @Autowired
     private UserService userService;
 
-    @PostMapping("/login")
+    @PostMapping("/auth/login")
     public ResponseEntity login(@RequestBody LoginRequestDTO loginRequestDTO){
         Users user = userRepository.findByLogin(loginRequestDTO.login());
 
         return userService.login(loginRequestDTO.login(), loginRequestDTO.password());
     }
 
-    @PostMapping("/register")
+    @PostMapping("/auth/register")
     public ResponseEntity register(@RequestBody UserDto registerUserDTO){
         return userService.register(registerUserDTO);
     }

@@ -28,20 +28,32 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        logger.info(request.getRequestURI());
+        // Print the request URI for debugging
+        System.out.println(request.getRequestURI());
+
+        String path = request.getRequestURI();
+
+        // Skip the filter for /auth/login and /auth/register
+        if (path.equals("/auth/login") || path.equals("/auth/register")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         var token = this.recoverToken(request);
+        System.out.println(token);
         var login = tokenService.validateToken(token);
 
-        if(login != null){
+        if (login != null) {
             Users user = userRepository.findByLogin(login);
             var authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
             var authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
+
         filterChain.doFilter(request, response);
     }
 
-    private String recoverToken(HttpServletRequest request){
+    private String recoverToken(HttpServletRequest request) {
         var authHeader = request.getHeader("Authorization");
         if (authHeader == null) {
             return null;
